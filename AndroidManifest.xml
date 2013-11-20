@@ -26,6 +26,7 @@
         	<meta-data android:name="com.google.android.glass.VoiceTrigger"
             	android:resource="@xml/what_is_this_object_trigger" />
         </activity>
+        <activity android:name="com.example.glass_image_recognition.ImageViewActivity" >
+        </activity>
     </application>
-
 </manifest>

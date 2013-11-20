@@ -1,62 +1,56 @@
 package com.example.glass_image_recognition;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
-import android.speech.RecognizerIntent;
+import android.os.FileObserver;
+import android.util.Log;
 import android.view.Menu;
-import android.widget.TextView;
+import android.widget.ImageView;
 
 public class MainActivity extends Activity {
+	private static final String LOG_TAG = MainActivity.class.getSimpleName();
+	private static final int TAKE_PICTURE = 1001;
+	private ImageView mImageView;
 
-	File mImageFile;
-	String mSelectedImagePath;
-	int TAKE_PICTURE = 1001;
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		TextView textView = (TextView)findViewById(R.id.recognition_text_TextView);
-		Intent intent = getIntent();
-		if(intent != null && intent.getExtras() != null){
-			ArrayList<String> voiceResults = intent.getExtras()
-			        .getStringArrayList(RecognizerIntent.EXTRA_RESULTS);
-			if(textView != null && voiceResults != null && voiceResults.size() > 0){
-				textView.setText(voiceResults.get(0));
-			}
-		}
-		//imageFromCamera();
+		mImageView = (ImageView) findViewById(R.id.imageView1);
+		imageFromCamera();
 	}
-	
+
 	public void imageFromCamera() {
-	    Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-	    mImageFile = new File(Environment.getExternalStorageDirectory()+File.separator+"MyApp",  
-	            "PIC"+System.currentTimeMillis()+".jpg");
-	    mSelectedImagePath = mImageFile.getAbsolutePath();
-	    intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mImageFile));
-	    startActivityForResult(intent, TAKE_PICTURE);
+		Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+		startActivityForResult(intent, TAKE_PICTURE);
 	}
-	
+
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    super.onActivityResult(requestCode, resultCode, data);
-	    if (resultCode == RESULT_OK) {
-//	        switch(requestCode) {
-//	        case TAKE_PICTURE:
-//	                    //Launch ImageEdit Activity
-//	            Intent i = new Intent(this, ImageEdit.class);
-//	                    i.putString("imgPath", "mSelectedImagePath");
-//	                    startActivity(i);
-//	            break;
-//	        }
-	    }
+		super.onActivityResult(requestCode, resultCode, data);
+		Log.d(LOG_TAG, "onActivityResult");
+		Log.d(LOG_TAG, "requestCode: " + requestCode);
+		Log.d(LOG_TAG, "resultCode: " + resultCode);
+		if (resultCode == RESULT_OK) {
+			switch (requestCode) {
+			case TAKE_PICTURE:
+				if (data != null && data.getExtras() != null) {
+					Bundle extras = data.getExtras();
+					final String pathName = (String) extras
+							.get("picture_file_path");
+					 startImageViewActivity(pathName);
+					break;
+				}
+			}
+		}
+	}
+	private void startImageViewActivity(String filePath){
+		Intent intent = new Intent();
+		intent.setComponent(new ComponentName("com.example.glass_image_recognition", "com.example.glass_image_recognition.ImageViewActivity"));
+		intent.putExtra(ImageViewActivity.IMAGE_EXTRA, filePath);
+		startActivity(intent);
 	}
 
 	@Override
