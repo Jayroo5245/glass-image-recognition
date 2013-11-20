@@ -121,7 +121,7 @@ public class ImageViewActivity extends Activity {
 			Log.d(LOG_TAG, "Setting mImageView with bitmap:");
 		} else {
 			mTextView.setText("Error, Please try again");
-			mTextView.setVisibility(View.VISIBLE);
+			//mTextView.setVisibility(View.VISIBLE);
 		}
 	}
 
