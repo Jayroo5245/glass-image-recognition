@@ -28,5 +28,7 @@
         </activity>
         <activity android:name="com.example.glass_image_recognition.ImageViewActivity" >
         </activity>
+		<activity android:name="com.example.glass_image_recognition.ResultsListActivity" >
+        </activity>
     </application>
 </manifest>

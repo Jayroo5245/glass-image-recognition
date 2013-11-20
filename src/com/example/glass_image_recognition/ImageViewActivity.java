@@ -4,8 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -14,6 +22,7 @@ import android.os.FileObserver;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -28,6 +37,7 @@ public class ImageViewActivity extends Activity {
 	private TextView mTextView;
 	private ProgressBar mProgressBar;
 	private String mFilePath;
+	public LinearLayout mContainer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +46,8 @@ public class ImageViewActivity extends Activity {
 		mImageView = (ImageView) findViewById(R.id.imageView2);
 		mTextView = (TextView) findViewById(R.id.textView1);
 		mProgressBar = (ProgressBar) findViewById(R.id.progressBar1);
+		mContainer = (LinearLayout) findViewById(R.id.image_view_container);
+		final Map<String, String> map = getPropertiesMap();
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
 			mFilePath = extras.getString(IMAGE_EXTRA);
@@ -43,7 +55,6 @@ public class ImageViewActivity extends Activity {
 			Log.d(LOG_TAG, "FileObserver.CREATE: " + FileObserver.CLOSE_WRITE);
 			//mFilePath = "/mnt/sdcard/DCIM/Camera/default.jpeg";
 			File file = new File(mFilePath);
-			//File file = new File("/mnt/sdcard/DCIM/Camera/default.jpg");
 			if (file.exists()) {
 				Log.d(LOG_TAG, "File exits processing image");
 				ImageViewActivity.this
@@ -52,7 +63,7 @@ public class ImageViewActivity extends Activity {
 						Log.d(LOG_TAG, "I am the UI thread");
 						updateImageView(mFilePath);
 						new QueryTask(
-								ImageViewActivity.this)
+								ImageViewActivity.this, map)
 								.execute(mFilePath);
 					}
 				});
@@ -72,7 +83,7 @@ public class ImageViewActivity extends Activity {
 											Log.d(LOG_TAG, "I am the UI thread");
 											updateImageView(mFilePath);
 											new QueryTask(
-													ImageViewActivity.this)
+													ImageViewActivity.this, map)
 													.execute(mFilePath);
 										}
 									});
@@ -83,6 +94,14 @@ public class ImageViewActivity extends Activity {
 			}
 
 		}
+	}
+	
+	private Map<String, String> getPropertiesMap(){
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("Sugar", "14g");
+		map.put("Cholesterol", "0mg");
+		map.put("calories", "105");
+		return map;
 	}
 
 	private void updateImageView(String filePath) {
@@ -111,11 +130,13 @@ public class ImageViewActivity extends Activity {
 		private Activity activity;
 		private KooabaApi kooaba;
 		private TextView tv;
+		private Map<String, String> mMap;
 
-		public QueryTask(Activity activity) {
+		public QueryTask(Activity activity, Map<String, String> map) {
 			this.activity = activity;
 			this.kooaba = new KooabaApi("369c5f92-1e24-4af2-bc94-885cacefd91b",
 					"KGzBhFug6N55qTb05nw0TO5uTR3xjrZJGlpeZfdw");
+			mMap = map;
 			// this.tv = (TextView)this.activity.findViewById(R.id.text);
 		}
 
@@ -130,7 +151,7 @@ public class ImageViewActivity extends Activity {
 			String imagePath = paths[0];
 
 			try {
-				kooaba.query(imagePath);
+				kooaba.query(imagePath, mMap);
 			} catch (InvalidKeyException e) {
 				e.printStackTrace();
 			} catch (NoSuchAlgorithmException e) {
@@ -146,9 +167,33 @@ public class ImageViewActivity extends Activity {
 			Log.d(LOG_TAG, "onPostExecute()");
 			Log.d(LOG_TAG, "HTTP Status: " + kooaba.getResponseStatus() + "\n");
 			Log.d(LOG_TAG, "HTTP Response: " + kooaba.getResponseBody() + "\n");
-			// tv.append("Done.\n\n");
-			// tv.append("HTTP Status: " + kooaba.getResponseStatus() + "\n");
-			// tv.append("HTTP Response: " + kooaba.getResponseBody() + "\n");
+			String response = kooaba.getResponseBody();
+			if(response != null && response.contains("results")){
+				Log.d(LOG_TAG, "Response contains results");
+				JSONObject obj;
+				try {
+					obj = new JSONObject(response);
+					if(obj != null && obj.has("results")){
+						JSONArray array = obj.getJSONArray("results");
+						if(array != null){
+							response = array.toString();
+							Intent intent = new Intent();
+							intent.setComponent(new ComponentName("com.example.glass_image_recognition", "com.example.glass_image_recognition.ResultsListActivity"));
+							intent.putExtra(ResultsListActivity.RESPONSE_EXTRA, response);
+							activity.startActivity(intent);
+
+						}
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			} else {
+				Log.d(LOG_TAG, "Response contains no results");
+				Intent intent = new Intent();
+				intent.setComponent(new ComponentName("com.example.glass_image_recognition", "com.example.glass_image_recognition.ResultsListActivity"));
+				intent.putExtra(ResultsListActivity.RESPONSE_EXTRA, response);
+				activity.startActivity(intent);
+			}
 		}
 	}
 }
