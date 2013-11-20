@@ -16,11 +16,13 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.FileObserver;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -33,7 +35,7 @@ public class ImageViewActivity extends Activity {
 			.getSimpleName();
 
 	public static final String IMAGE_EXTRA = "imageExtra";
-	private ImageView mImageView;
+	//private ImageView mImageView;
 	private TextView mTextView;
 	private ProgressBar mProgressBar;
 	private String mFilePath;
@@ -43,7 +45,8 @@ public class ImageViewActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_imageview);
-		mImageView = (ImageView) findViewById(R.id.imageView2);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		//mImageView = (ImageView) findViewById(R.id.imageView2);
 		mTextView = (TextView) findViewById(R.id.textView1);
 		mProgressBar = (ProgressBar) findViewById(R.id.progressBar1);
 		mContainer = (LinearLayout) findViewById(R.id.image_view_container);
@@ -61,10 +64,11 @@ public class ImageViewActivity extends Activity {
 				.runOnUiThread(new Runnable() {
 					public void run() {
 						Log.d(LOG_TAG, "I am the UI thread");
-						updateImageView(mFilePath);
-						new QueryTask(
-								ImageViewActivity.this, map)
-								.execute(mFilePath);
+						if(updateImageView(mFilePath)){
+							new QueryTask(
+									ImageViewActivity.this, map)
+									.execute(mFilePath);												
+						}
 					}
 				});
 			} else {
@@ -81,10 +85,11 @@ public class ImageViewActivity extends Activity {
 									.runOnUiThread(new Runnable() {
 										public void run() {
 											Log.d(LOG_TAG, "I am the UI thread");
-											updateImageView(mFilePath);
-											new QueryTask(
-													ImageViewActivity.this, map)
-													.execute(mFilePath);
+											if(updateImageView(mFilePath)){
+												new QueryTask(
+														ImageViewActivity.this, map)
+														.execute(mFilePath);												
+											}
 										}
 									});
 						}
@@ -104,24 +109,26 @@ public class ImageViewActivity extends Activity {
 		return map;
 	}
 
-	private void updateImageView(String filePath) {
-		mTextView.setVisibility(View.GONE);
-		mProgressBar.setVisibility(View.GONE);
+	private boolean updateImageView(String filePath) {
+		mTextView.setText("Uploading...");
 		Bitmap thumbnail = null;
 		BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inSampleSize = 4;
 		thumbnail = BitmapFactory.decodeFile(filePath, options);
-		Log.d(LOG_TAG, "Pre Setting mImageView with bitmap:");
+		Log.d(LOG_TAG, "Pre Setting mContainer with bitmap:");
 		Log.d(LOG_TAG, "thumbnail: "
 				+ ((thumbnail == null) ? "null" : "Not null"));
-		Log.d(LOG_TAG, "mImageView: "
-				+ ((mImageView == null) ? "null" : "Not null"));
-		if (mImageView != null && thumbnail != null) {
-			mImageView.setImageBitmap(thumbnail);
-			Log.d(LOG_TAG, "Setting mImageView with bitmap:");
+		Log.d(LOG_TAG, "mContainer: "
+				+ ((mContainer == null) ? "null" : "Not null"));
+		if (mContainer != null && thumbnail != null) {
+			//mImageView.setImageBitmap(thumbnail);
+			mContainer.setBackgroundDrawable(new BitmapDrawable(thumbnail));
+			Log.d(LOG_TAG, "Setting mContainer with bitmap:");
+			return true;
 		} else {
-			mTextView.setText("Error, Please try again");
-			//mTextView.setVisibility(View.VISIBLE);
+			mTextView.setText("Error creating image, please try again");
+			mTextView.setVisibility(View.VISIBLE);
+			return false;
 		}
 	}
 
@@ -176,18 +183,21 @@ public class ImageViewActivity extends Activity {
 					if(obj != null && obj.has("results")){
 						JSONArray array = obj.getJSONArray("results");
 						if(array != null){
+							mTextView.setVisibility(View.GONE);
+							mProgressBar.setVisibility(View.GONE);
 							response = array.toString();
 							Intent intent = new Intent();
 							intent.setComponent(new ComponentName("com.example.glass_image_recognition", "com.example.glass_image_recognition.ResultsListActivity"));
 							intent.putExtra(ResultsListActivity.RESPONSE_EXTRA, response);
 							activity.startActivity(intent);
-
 						}
 					}
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
 			} else {
+				mTextView.setVisibility(View.GONE);
+				mProgressBar.setVisibility(View.GONE);
 				Log.d(LOG_TAG, "Response contains no results");
 				Intent intent = new Intent();
 				intent.setComponent(new ComponentName("com.example.glass_image_recognition", "com.example.glass_image_recognition.ResultsListActivity"));
