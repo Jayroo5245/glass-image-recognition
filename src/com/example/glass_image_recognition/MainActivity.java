@@ -17,8 +17,8 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		mImageView = (ImageView) findViewById(R.id.imageView1);
+		//setContentView(R.layout.activity_main);
+		//mImageView = (ImageView) findViewById(R.id.imageView1);
 		imageFromCamera();
 	}
 
@@ -51,6 +51,7 @@ public class MainActivity extends Activity {
 		intent.setComponent(new ComponentName("com.example.glass_image_recognition", "com.example.glass_image_recognition.ImageViewActivity"));
 		intent.putExtra(ImageViewActivity.IMAGE_EXTRA, filePath);
 		startActivity(intent);
+		finish();
 	}
 
 	@Override
