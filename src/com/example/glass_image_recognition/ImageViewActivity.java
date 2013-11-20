@@ -98,9 +98,9 @@ public class ImageViewActivity extends Activity {
 	
 	private Map<String, String> getPropertiesMap(){
 		Map<String, String> map = new HashMap<String, String>();
-		map.put("Sugar", "14g");
-		map.put("Cholesterol", "0mg");
-		map.put("calories", "105");
+		map.put("Sprite", "Sprite");
+		map.put("Sugars", "38g");
+		map.put("color", "green");
 		return map;
 	}
 

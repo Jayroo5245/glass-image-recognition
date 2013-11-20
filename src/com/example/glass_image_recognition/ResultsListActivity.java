@@ -54,8 +54,8 @@ public class ResultsListActivity extends Activity {
 				JSONObject obj = (JSONObject)jsonArray.get(0);
 				array.add("Score:" + obj.get("score"));
 				obj = (JSONObject) obj.get("metadata");
-				array.add("Banana: " + "Banana");
-				obj = (JSONObject) obj.get("Banana");
+				array.add("Sprite: " + "Sprite");
+				obj = (JSONObject) obj.get("Sprite");
 				Iterator<String> keys = obj.keys();
 				while(keys.hasNext()){
 					String key = keys.next();

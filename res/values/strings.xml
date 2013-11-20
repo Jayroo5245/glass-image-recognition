@@ -5,4 +5,5 @@
     <string name="hello_world">Hello world!</string>
 	<string name="glass_voice_prompt_what_is_this_object">Please describe the object</string>
 	<string name="glass_voice_trigger_what_is_this_object">What is this object</string>
+	<string name="glass_voice_trigger_launch_truth_image">Launch truth image</string>
 </resources>
