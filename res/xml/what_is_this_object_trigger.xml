@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<trigger keyword="@string/glass_voice_trigger_what_is_this_object">
+    <input prompt="@string/glass_voice_prompt_what_is_this_object" />
+</trigger>
